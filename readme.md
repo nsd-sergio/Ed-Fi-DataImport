@@ -91,6 +91,10 @@ for detailed information on how to contribute source code.
 
 ## License
 
-Copyright &copy; Ed-Fi Alliance. All rights reserved.
+Copyright (c) 2022 Ed-Fi Alliance, LLC and contributors.
 
-Licensed under the [Ed-Fi License](https://www.ed-fi.org/getting-started/license-ed-fi-technology/).
+Licensed under the Apache License, Version 2.0 (the "License").
+
+Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.
+
+See NOTICES for additional copyright and license notifications.
