@@ -18,7 +18,7 @@ namespace DataImport.Web.Features.Agent
 {
     public class AgentFiles
     {
-        private static bool AllowTestCertificates;
+        private static bool _allowTestCertificates;
 
         public class QueryResult
         {
@@ -44,7 +44,7 @@ namespace DataImport.Web.Features.Agent
             public QueryHandler(ILogger<AgentFiles> logger, IOptions<AppSettings> options)
             {
                 _logger = logger;
-                AllowTestCertificates = options.Value.AllowTestCertificates;
+                _allowTestCertificates = options.Value.AllowTestCertificates;
             }
 
             protected override QueryResult Handle(Query request)
@@ -60,29 +60,29 @@ namespace DataImport.Web.Features.Agent
                     if (string.IsNullOrEmpty(request.Password))
                         throw new Exception("'Password' must not be empty.");
 
-                    var files = GetAgentFiles(request.Url, request.Port, request.Username, request.Password, request.Directory, request.FilePattern , request.AgentTypeCode);
+                    var files = GetAgentFiles(request.Url, request.Port, request.Username, request.Password, request.Directory, request.FilePattern, request.AgentTypeCode);
 
-                    return new QueryResult {FileNames = files.Select(x => x)};
+                    return new QueryResult { FileNames = files.Select(x => x) };
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex, "Error retrieving agent files.");
-                    return new QueryResult {ErrorMessage = ex.Message};
+                    return new QueryResult { ErrorMessage = ex.Message };
                 }
             }
 
             private static void OnValidateFtpsCertificate(FtpClient control, FtpSslValidationEventArgs e)
             {
-                if (AllowTestCertificates)
+                if (_allowTestCertificates)
                     e.Accept = true;
             }
 
             private static IEnumerable<string> GetAgentFiles(string url, int? port, string username, string password, string directory, string filePattern, string agentType)
             {
-                if (agentType == AgentTypeCodeEnum.FTPS)
+                if (agentType == AgentTypeCodeEnum.Ftps)
                 {
                     if (port == null)
-                        port = AgentTypeCodeEnum.DefaultPort(AgentTypeCodeEnum.FTPS);
+                        port = AgentTypeCodeEnum.DefaultPort(AgentTypeCodeEnum.Ftps);
 
                     using (var ftpsClient = new FtpClient(url, port.Value, username, password))
                     {
@@ -91,13 +91,13 @@ namespace DataImport.Web.Features.Agent
                         ftpsClient.Connect();
                         if (!ftpsClient.IsConnected) throw new Exception("Ftps Client Cannot Connect");
                         return ftpsClient.GetListing(directory).Where(x =>
-                            x.Type == FtpFileSystemObjectType.File && x.Name.IsLike(filePattern.Trim())).Select(x => x.Name).ToList(); 
+                            x.Type == FtpFileSystemObjectType.File && x.Name.IsLike(filePattern.Trim())).Select(x => x.Name).ToList();
                     }
                 }
                 else
                 {
                     if (port == null)
-                        port = AgentTypeCodeEnum.DefaultPort(AgentTypeCodeEnum.SFTP);
+                        port = AgentTypeCodeEnum.DefaultPort(AgentTypeCodeEnum.Sftp);
 
                     using (var sftpClient = new SftpClient(new ConnectionInfo(url, port.Value, username,
                         new PasswordAuthenticationMethod(username, password))))

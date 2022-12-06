@@ -17,7 +17,7 @@ using AddPreprocessor = DataImport.Web.Features.Preprocessor.AddPreprocessor;
 
 namespace DataImport.Web.Tests.Features.Agent
 {
-    class ArchiveAgentTests
+    internal class ArchiveAgentTests
     {
         [Test]
         public async Task ShouldSuccessfullyArchiveAgent()
@@ -87,21 +87,21 @@ namespace DataImport.Web.Tests.Features.Agent
         {
             var apiServer = GetDefaultApiServer();
             var agentName = SampleString();
-            const int runOrder = 1;
+            const int RunOrder = 1;
 
             var viewModel = new AddEditAgentViewModel
             {
                 AgentTypeCode = "Manual",
                 Name = agentName,
                 ApiServerId = apiServer.Id,
-                RunOrder = runOrder
+                RunOrder = RunOrder
             };
 
             var agentId = (await Send(new AddAgent.Command { ViewModel = viewModel })).AgentId;
             await Send(new ArchiveAgent.Command { Id = agentId });
 
-            new AddEditAgentViewModel { AgentTypeCode = "Manual", Name = agentName, ApiServerId = apiServer.Id, RunOrder = runOrder }
-                .ShouldNotValidate($"An Agent with the run order {runOrder} already exists. Please provide a distinct run order.");
+            new AddEditAgentViewModel { AgentTypeCode = "Manual", Name = agentName, ApiServerId = apiServer.Id, RunOrder = RunOrder }
+                .ShouldNotValidate($"An Agent with the run order {RunOrder} already exists. Please provide a distinct run order.");
         }
 
         [Test]
@@ -154,8 +154,8 @@ namespace DataImport.Web.Tests.Features.Agent
                 AgentTypeCode = agentTypeCode,
                 Name = SampleString(agentTypeCode),
                 ApiServerId = apiServer.Id,
-                RowProcessorId = scriptType == ScriptType.CustomRowProcessor ? preprocessor.PreprocessorId : (int?)null,
-                FileGeneratorId = scriptType == ScriptType.CustomFileGenerator ? preprocessor.PreprocessorId : (int?)null
+                RowProcessorId = scriptType == ScriptType.CustomRowProcessor ? preprocessor.PreprocessorId : (int?) null,
+                FileGeneratorId = scriptType == ScriptType.CustomFileGenerator ? preprocessor.PreprocessorId : (int?) null
             };
 
             var agentId = (await Send(new AddAgent.Command { ViewModel = viewModel })).AgentId;

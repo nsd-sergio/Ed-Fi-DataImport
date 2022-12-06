@@ -19,8 +19,6 @@ using System.Linq;
 
 namespace DataImport.Web.Features.BootstrapData
 {
-    using BootstrapData = DataImport.Models.BootstrapData;
-
     public class AddBootstrapData
     {
         public class Query : IRequest<Command>
@@ -118,7 +116,7 @@ namespace DataImport.Web.Features.BootstrapData
             {
                 var resource = _database.Resources.Single(x => x.Path == request.ResourcePath && x.ApiVersionId == request.ApiVersionId);
 
-                var bootstrapData = new BootstrapData
+                var bootstrapData = new DataImport.Models.BootstrapData
                 {
                     Name = request.Name,
                     ResourcePath = resource.Path,

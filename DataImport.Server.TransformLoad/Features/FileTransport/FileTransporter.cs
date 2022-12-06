@@ -3,7 +3,6 @@
 // The Ed-Fi Alliance licenses this file to you under the Apache License, Version 2.0.
 // See the LICENSE and NOTICES files in the project root for more information.
 
-using DataImport.Common;
 using DataImport.Common.Enums;
 using DataImport.Models;
 using MediatR;
@@ -42,8 +41,8 @@ namespace DataImport.Server.TransformLoad.Features.FileTransport
                     .Include(agent => agent.AgentSchedules)
                     .Where(agent => agent.ApiServerId == request.ApiServerId &&
                         agent.Enabled && agent.Archived == false &&
-                        (agent.AgentTypeCode == AgentTypeCodeEnum.SFTP ||
-                         agent.AgentTypeCode == AgentTypeCodeEnum.FTPS))
+                        (agent.AgentTypeCode == AgentTypeCodeEnum.Sftp ||
+                         agent.AgentTypeCode == AgentTypeCodeEnum.Ftps))
                     .OrderBy(agent => agent.RunOrder == null)
                     .ThenBy(agent => agent.RunOrder)
                     .ThenBy(agent => agent.Id)

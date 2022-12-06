@@ -6,7 +6,6 @@
 using DataImport.Common.Enums;
 using DataImport.Models;
 using DataImport.Server.TransformLoad.Features.FileTransport;
-using DataImport.TestHelpers;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using NUnit.Framework;
@@ -28,7 +27,7 @@ namespace DataImport.Server.TransformLoad.Tests.Features.FileTransport
         private List<AgentSchedule> _agentSchedules;
         private string _ftpsAgentName;
         private string _sftpAgentName;
-        private AppSettings appSettings;
+        private AppSettings _appSettings;
 
         [SetUp]
         public void Init()
@@ -55,7 +54,7 @@ namespace DataImport.Server.TransformLoad.Tests.Features.FileTransport
             _ftpsAgent = new Agent
             {
                 Name = _ftpsAgentName,
-                AgentTypeCode = AgentTypeCodeEnum.FTPS,
+                AgentTypeCode = AgentTypeCodeEnum.Ftps,
                 Url = "127.0.0.1",
                 Username = "username",
                 Password = "password",
@@ -68,7 +67,7 @@ namespace DataImport.Server.TransformLoad.Tests.Features.FileTransport
             _sftpAgent = new Agent
             {
                 Name = _sftpAgentName,
-                AgentTypeCode = AgentTypeCodeEnum.SFTP,
+                AgentTypeCode = AgentTypeCodeEnum.Sftp,
                 Url = "172.0.0.33",
                 Username = "username",
                 Password = "password",
@@ -77,7 +76,7 @@ namespace DataImport.Server.TransformLoad.Tests.Features.FileTransport
                 ApiServerId = apiServer.Id
             };
 
-            appSettings = Services.GetService<IOptions<AppSettings>>().Value;
+            _appSettings = Services.GetService<IOptions<AppSettings>>().Value;
         }
 
         [Test]
@@ -89,7 +88,7 @@ namespace DataImport.Server.TransformLoad.Tests.Features.FileTransport
             var agentId = AddAgent(_ftpsAgent);
 
             _ftpsAgent.ApiServerId.ShouldNotBeNull();
-            await Send(new FileTransporter.Command {  ApiServerId = _ftpsAgent.ApiServerId.Value });
+            await Send(new FileTransporter.Command { ApiServerId = _ftpsAgent.ApiServerId.Value });
 
             var result = GetLoggedAgentFiles(agentId).ToList();
 
@@ -129,7 +128,7 @@ namespace DataImport.Server.TransformLoad.Tests.Features.FileTransport
             var agentId = AddAgent(_ftpsAgent);
 
             _sftpAgent.ApiServerId.ShouldNotBeNull();
-            await Send(new FileTransporter.Command {ApiServerId = _sftpAgent.ApiServerId.Value });
+            await Send(new FileTransporter.Command { ApiServerId = _sftpAgent.ApiServerId.Value });
             var result = GetLoggedAgentFiles(agentId).ToList();
 
             // Assert
@@ -137,10 +136,10 @@ namespace DataImport.Server.TransformLoad.Tests.Features.FileTransport
             result.Count.ShouldBe(2);
             result[0].FileName.ShouldBe("FtpsFile1");
             result[0].Url.ShouldContainWithoutWhitespace(agentId);
-            result[0].Url.ShouldContainWithoutWhitespace(appSettings.FileMode);
+            result[0].Url.ShouldContainWithoutWhitespace(_appSettings.FileMode);
             result[1].FileName.ShouldBe("FtpsFile2");
             result[1].Url.ShouldContainWithoutWhitespace(agentId);
-            result[1].Url.ShouldContainWithoutWhitespace(appSettings.FileMode);
+            result[1].Url.ShouldContainWithoutWhitespace(_appSettings.FileMode);
         }
 
         [Test]
@@ -150,7 +149,7 @@ namespace DataImport.Server.TransformLoad.Tests.Features.FileTransport
             _ftpsAgent.AgentSchedules = null;
 
             var agentId = AddAgent(_ftpsAgent);
-            await Send(new FileTransporter.Command ());
+            await Send(new FileTransporter.Command());
 
             var result = GetLoggedAgentFiles(agentId).ToList();
 

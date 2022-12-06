@@ -58,12 +58,12 @@ namespace DataImport.Web.Infrastructure
 
         private static string ActionName<TModel>(IHtmlHelper<TModel> html)
         {
-            return (string)html.ViewContext.RouteData.Values["action"];
+            return (string) html.ViewContext.RouteData.Values["action"];
         }
 
         private static string ControllerName<TModel>(IHtmlHelper<TModel> html)
         {
-            return (string)html.ViewContext.RouteData.Values["controller"];
+            return (string) html.ViewContext.RouteData.Values["controller"];
         }
 
         public static HtmlString ExternalLink<TModel>(this IHtmlHelper<TModel> html, string text, string url)
@@ -269,7 +269,7 @@ namespace DataImport.Web.Infrastructure
 
         public static HtmlString OdsApiUrlHelpModalButton(this IHtmlHelper html)
         {
-            const string title = "How to configure your ODS/API URL";
+            const string Title = "How to configure your ODS/API URL";
 
             var bodyRawHtml = @"
             <p>The ODS/API URL will be the Base URI for your ODS instance. If you are unsure on what that would look like for your ODS/API, 
@@ -288,12 +288,12 @@ namespace DataImport.Web.Infrastructure
             <p>In this scenario, the URI should end with something like 'data/v3/2019'. For example, if a GET assessments API call looks like 
             <a>https://ods.example.com/data/v3/2019/ed-fi/assessments</a>, then the Base URI would be <a>https://ods.example.com/data/v3/2019</a>.</p>";
 
-            return html.HelpModalButton(title, bodyRawHtml);
+            return html.HelpModalButton(Title, bodyRawHtml);
         }
 
         public static HtmlString PreprocessorScriptTypeHelpModalButton(this IHtmlHelper html)
         {
-            const string title = "Preprocessor Script Type";
+            const string Title = "Preprocessor Script Type";
 
             var bodyRawHtml = @"
             <p>Data Import provides support for incorporating scriptable logic into the file processing pipeline in various ways. Use the applicable option for your needs:</p>
@@ -322,7 +322,7 @@ namespace DataImport.Web.Infrastructure
                 <li>Joining multiple files together to create an input file.</li>
             </ul>";
 
-            return html.HelpModalButton(title, bodyRawHtml);
+            return html.HelpModalButton(Title, bodyRawHtml);
         }
 
         private static HtmlString HelpModalButton(this IHtmlHelper html, string modalTitle, string modalBody)
@@ -461,7 +461,7 @@ namespace DataImport.Web.Infrastructure
         public static HtmlString FormGroup(this IHtmlHelper html, IHtmlContent label, IHtmlContent content, string contentId = null)
         {
             var labelDiv = Tag("div", "col-sm-2", label);
-            var contentDiv = Tag("div", "col-sm-10", content);  
+            var contentDiv = Tag("div", "col-sm-10", content);
 
             if (!string.IsNullOrEmpty(contentId))
                 contentDiv.GenerateId(contentId, "_");
@@ -479,17 +479,17 @@ namespace DataImport.Web.Infrastructure
             foreach (var content in contents)
             {
                 if (content is string)
-                    tag.InnerHtml.AppendHtml((string)content);
+                    tag.InnerHtml.AppendHtml((string) content);
                 else if (content is TagBuilder builder)
                     tag.InnerHtml.AppendHtml(builder);
                 else if (content is HtmlString)
-                    tag.InnerHtml.AppendHtml((HtmlString)content);
+                    tag.InnerHtml.AppendHtml((HtmlString) content);
                 else if (content is StringHtmlContent)
-                    tag.InnerHtml.AppendHtml((StringHtmlContent)content);
+                    tag.InnerHtml.AppendHtml((StringHtmlContent) content);
                 else
                     throw new Exception("Unexpected tag content: " + content);
             }
-            
+
             return tag;
         }
 

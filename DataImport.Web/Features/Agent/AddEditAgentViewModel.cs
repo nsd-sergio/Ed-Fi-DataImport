@@ -112,13 +112,14 @@ namespace DataImport.Web.Features.Agent
         private bool NewNameDoesNotAlreadyExist(AddEditAgentViewModel model, string candidateName) =>
             _dbContext.Agents.FirstOrDefault(agent => agent.Name == candidateName && agent.Id != model.Id && !agent.Archived) == null;
 
-        private bool BeUnchangedOrUnusedRunOrder(AddEditAgentViewModel model, int? candidateRunOrder) {
+        private bool BeUnchangedOrUnusedRunOrder(AddEditAgentViewModel model, int? candidateRunOrder)
+        {
             return _dbContext.Agents.FirstOrDefault(agent => agent.RunOrder == candidateRunOrder && agent.Id != model.Id) == null;
         }
 
         private bool SftpOrFtpsAgentType(AddEditAgentViewModel vm) =>
-            !string.IsNullOrWhiteSpace(vm.AgentTypeCode) && (vm.AgentTypeCode.Equals(AgentTypeCodeEnum.SFTP) ||
-            vm.AgentTypeCode.Equals(AgentTypeCodeEnum.FTPS));
+            !string.IsNullOrWhiteSpace(vm.AgentTypeCode) && (vm.AgentTypeCode.Equals(AgentTypeCodeEnum.Sftp) ||
+            vm.AgentTypeCode.Equals(AgentTypeCodeEnum.Ftps));
 
         private bool PowerShellAgentType(AddEditAgentViewModel vm) =>
             !string.IsNullOrWhiteSpace(vm.AgentTypeCode) && (vm.AgentTypeCode.Equals(AgentTypeCodeEnum.PowerShell));

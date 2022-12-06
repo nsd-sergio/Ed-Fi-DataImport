@@ -6,15 +6,14 @@
 using DataImport.TestHelpers;
 using DataImport.Web.Features.ApiServers;
 using Shouldly;
+using DataImport.Web.Features.Configuration;
+using NUnit.Framework;
+using System.Linq;
+using System.Threading.Tasks;
+using static DataImport.Web.Tests.Testing;
 
 namespace DataImport.Web.Tests.Features.Configuration
 {
-    using DataImport.Web.Features.Configuration;
-    using NUnit.Framework;
-    using System.Linq;
-    using System.Threading.Tasks;
-    using static Testing;
-
     public class EditConfigurationTests
     {
         [Test]
@@ -113,34 +112,34 @@ namespace DataImport.Web.Tests.Features.Configuration
                 var configuration = d.Configurations.Single();
 
                 configuration.AvailableCmdlets = "Some-Cmdlet";
-                configuration.ImportPSModules = "Some-PsModule";
+                configuration.ImportPsModules = "Some-PsModule";
 
                 return configuration;
             });
 
             var config = Query(d => d.Configurations.Single());
             config.AvailableCmdlets.ShouldBe("Some-Cmdlet");
-            config.ImportPSModules.ShouldBe("Some-PsModule");
+            config.ImportPsModules.ShouldBe("Some-PsModule");
 
             var editForm = await Send(new EditConfiguration.Query());
             await Send(ViewModelToCommand(editForm));
 
             config = Query(d => d.Configurations.Single());
             config.AvailableCmdlets.ShouldBe("Some-Cmdlet");
-            config.ImportPSModules.ShouldBe("Some-PsModule");
+            config.ImportPsModules.ShouldBe("Some-PsModule");
 
             Query(d =>
             {
                 var configuration = d.Configurations.Single();
 
                 configuration.AvailableCmdlets = null;
-                configuration.ImportPSModules = null;
+                configuration.ImportPsModules = null;
 
                 return configuration;
             });
             config = Query(d => d.Configurations.Single());
             config.AvailableCmdlets.ShouldBeNull();
-            config.ImportPSModules.ShouldBeNull();
+            config.ImportPsModules.ShouldBeNull();
         }
     }
 }
