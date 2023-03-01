@@ -4,6 +4,7 @@
 // See the LICENSE and NOTICES files in the project root for more information.
 
 using DataImport.Common;
+using DataImport.Common.Logging;
 using DataImport.Common.Preprocessors;
 using DataImport.Models;
 using MediatR;
@@ -191,7 +192,7 @@ namespace DataImport.Server.TransformLoad.Features.LoadResources
                         var (rowPostResponse, log) = await MapAndPostCsvRow(odsApi, row.Content, dataMap, row.Number, file);
 
                         if (log != null && _ingestionLogLevels.Contains(log.Level))
-                            ingestionLogs.Add(log);
+                            WriteLog(log);
 
                         if (rowPostResponse == RowResult.Success)
                             Interlocked.Add(ref successCount, 1);
@@ -240,8 +241,6 @@ namespace DataImport.Server.TransformLoad.Features.LoadResources
                 {
                     if (tempCsvFilePath != null)
                         System.IO.File.Delete(tempCsvFilePath);
-
-                    await WriteIngestionLogs(ingestionLogs);
                 }
             }
 
@@ -377,6 +376,9 @@ namespace DataImport.Server.TransformLoad.Features.LoadResources
                     Metadata = dataMap.Metadata,
                     Value = mappedRowJson,
                     AgentId = file.AgentId,
+                    AgentName = file.Agent?.Name,
+                    ApiServerName = file.Agent?.ApiServer?.Name,
+                    ApiVersion = file.Agent?.ApiServer?.ApiVersion?.Version.ToString(),
                     FileName = file.FileName,
                     RowNumber = rowNum
                 };
@@ -460,45 +462,26 @@ namespace DataImport.Server.TransformLoad.Features.LoadResources
                     _fileService.Delete(file);
             }
 
-            private async Task WriteIngestionLogs(IEnumerable<IngestionLogMarker> markers)
+            private void WriteLog(IngestionLogMarker marker)
             {
-                var agentIds = markers.Select(m => m.MappedResource.AgentId)
-                    .Distinct()
-                    .ToList();
-
-                var agents = _dbContext.Agents.Where(x => agentIds.Contains(x.Id)).Select(x => new
+                var model = new IngestionLog
                 {
-                    AgentId = x.Id,
-                    ApiServerName = x.ApiServer.Name,
-                    ApiVersion = x.ApiServer.ApiVersion.Version,
-                    AgentName = x.Name
-                }).ToDictionary(x => x.AgentId);
-
-                var logs = markers.Select(marker =>
-                {
-                    agents.TryGetValue(marker.MappedResource.AgentId ?? -1, out var agent);
-
-                    return new IngestionLog
-                    {
-                        Date = marker.Date,
-                        Result = marker.Result,
-                        RowNumber = marker.MappedResource.RowNumber.ToString(),
-                        EndPointUrl = marker.EndpointUrl,
-                        HttpStatusCode = marker.StatusCode?.ToString(),
-                        Data = marker.MappedResource.Value.ToString(),
-                        OdsResponse = marker.OdsResponse,
-                        Level = marker.Level,
-                        Operation = "TransformingData",
-                        Process = "DataImport.Server.TransformLoad",
-                        FileName = marker.MappedResource.FileName,
-                        AgentName = agent?.AgentName,
-                        ApiServerName = agent?.ApiServerName,
-                        ApiVersion = agent?.ApiVersion,
-                    };
-                });
-
-                await _dbContext.IngestionLogs.AddRangeAsync(logs);
-                _dbContext.SaveChanges();
+                    Date = marker.Date,
+                    Result = marker.Result,
+                    RowNumber = marker.MappedResource.RowNumber.ToString(),
+                    EndPointUrl = marker.EndpointUrl,
+                    HttpStatusCode = marker.StatusCode?.ToString(),
+                    Data = marker.MappedResource.Value.ToString(),
+                    OdsResponse = marker.OdsResponse,
+                    Level = marker.Level,
+                    Operation = "TransformingData",
+                    Process = "DataImport.Server.TransformLoad",
+                    FileName = marker.MappedResource.FileName,
+                    AgentName = marker.MappedResource.AgentName,
+                    ApiServerName = marker.MappedResource.ApiServerName,
+                    ApiVersion = marker.MappedResource.ApiVersion
+                };
+                _logger.LogToTable($"Writing in IngestionLog for row: {model.RowNumber}", model, "IngestionLog");
             }
 
             private async Task<(string, IEnumerable<ImportRow>)> GetRowsToImport(File file, Agent agent, DataMap dataMap)
