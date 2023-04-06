@@ -40,10 +40,6 @@ async function cleanup(steps: string[]) {
       await cleanAPIConnection();
     }
 
-    if (steps.includes("it's on the 'Configuration' page")) {
-      await rollbackConfiguration(steps);
-    }
-
     if (
       steps.includes("clicking on Import Template") ||
       steps.includes("there's a template imported")
@@ -69,18 +65,6 @@ async function cleanup(steps: string[]) {
 async function cleanAPIConnection() {
   await models.apiConnectionsPage.navigate();
   await models.apiConnectionsPage.clickDelete();
-}
-
-async function rollbackConfiguration(steps: string[]) {
-  await models.configurationPage.navigate();
-
-  if (steps.includes("user registration")) {
-    await models.configurationPage.changeUserRegistrationValue();
-  } else if (steps.includes("clicking on enable product improvement")) {
-    await models.configurationPage.changeProductImprovementValue();
-  }
-
-  await models.configurationPage.clickUpdateConfiguration();
 }
 
 async function cleanMap(version = API_Versions.Version53) {
