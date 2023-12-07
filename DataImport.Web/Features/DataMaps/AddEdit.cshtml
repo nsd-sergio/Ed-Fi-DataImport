@@ -127,6 +127,8 @@ See the LICENSE and NOTICES files in the project root for more information.
         </div>
     </div>
 
+    @Html.Input(m => m.IsDeleteOperation)
+
     <fieldset>
         <div id="attributeContainer" style="display:none;">
             @Html.Input(x => x.Attribute, new { placeholder = "Preprocessor Attribute" }, Html.HelpSpan("This should be provided if the selected preprocessor is configured to require an attribute."))
@@ -182,6 +184,11 @@ See the LICENSE and NOTICES files in the project root for more information.
         </div>
     </fieldset>
 }
+
+<div id="delete-operation-warning" class="alert alert-warning @(Model.IsDeleteOperation ? "" : "hidden")">
+    <h4>Delete by Id</h4>
+    <p>This data map will delete the rows from the selected ODS / API instance based on the unique identifier given in the selected resource as selected above. It will perform a lookup by these values, and then send a DELETE command to the ODS API to remove the data from the instance. Please use this function with caution and ensure any critical data is backed up before using this feature. </p>
+</div>
 
 @if (Model.PreprocessorLogMessages?.Count > 0)
 {
@@ -257,15 +264,28 @@ See the LICENSE and NOTICES files in the project root for more information.
     {
 @Html.ValidationSummary(true, "", new { @class = "text-danger" })
 
+                @if (!Model.IsDeleteOperation)
+                {
                     <div id="divCSVFields">
                         @Html.Label("CSV Fields")
                     </div>
                     <div id="divModelFields" style="padding: 10px;">
                         @await Html.PartialAsync("_PartialDataMapperFields", Model.FieldsViewModel)
                     </div>
-                                                            @Html.Hidden("ColumnHeaders", JsonConvert.SerializeObject(Model.ColumnHeaders))
-                                                                                @Html.SubmitButton("Save Map", new { id = "btnSubmit" })}
-                                                                        }
+                                                            
+                }
+                else
+                {
+                    <div id="divCSVFields">
+                        @Html.Label("CSV Fields")
+                    </div>
+                    <div id="divModelFields" style="padding: 10px;">
+                        @await Html.PartialAsync("_PartialDataMapperDeleteByIdFields", Model.FieldsViewModel)
+                    </div>
+                }
+        @Html.Hidden("ColumnHeaders", JsonConvert.SerializeObject(Model.ColumnHeaders))
+        @Html.SubmitButton("Save Map", new { id = "btnSubmit" })}
+}
 
 @section scripts{
     <script type="text/javascript">
@@ -273,6 +293,7 @@ See the LICENSE and NOTICES files in the project root for more information.
 
             var $apiVersionIdElem = $('#@Html.IdFor(m => m.ApiVersionId)');
             var $resourcePathElem = $('#@Html.IdFor(m => m.ResourcePath)');
+            var $isDeleteOperationElem = $('#@Html.IdFor(m => m.IsDeleteOperation)');
 
             refreshResourcePathVisibility();
             refreshAllControlVisibility();
@@ -361,6 +382,7 @@ See the LICENSE and NOTICES files in the project root for more information.
                         mappings: mappingJson,
                         preprocessorId: $('#@Html.IdFor(m => m.PreprocessorId)').val(),
                         attribute: $('#@Html.IdFor(m => m.Attribute)').val(),
+                        isDeleteOperation: $('#@Html.IdFor(m => m.IsDeleteOperation)').is(":checked"),
                         columnHeaders: JSON.parse($('#@Html.IdFor(m => m.ColumnHeaders)').val())
                     };
                     $.ajax({
@@ -384,6 +406,10 @@ See the LICENSE and NOTICES files in the project root for more information.
                 clearDataMapping();
                 invalidateAPIConnectionVisibility();
                 refreshAttributeVisibility();
+            });
+
+            $isDeleteOperationElem.change(function() {
+                $('#delete-operation-warning').toggleClass('hidden', $isDeleteOperationElem.is(":checked")===false)
             });
 
             $apiVersionIdElem.change(function() {
@@ -433,7 +459,8 @@ See the LICENSE and NOTICES files in the project root for more information.
                 var formData = {
                     apiVersionId: $apiVersionIdElem.val(),
                     columnHeaders: columnHeaders,
-                    resourcePath: resourcePath
+                    resourcePath: resourcePath,
+                    isDeleteOperation: $isDeleteOperationElem.is(":checked")
                 };
 
                 disableSubmitButton(true);

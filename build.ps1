@@ -263,7 +263,9 @@ function ResetTestDatabases {
 }
 
 function IntegrationTests {
-    Invoke-Execute { RunTests -Filter "FullyQualifiedName~.Tests&Category!=PowerShellTests" }
+    Invoke-Execute { RunTests -Filter "FullyQualifiedName~Models.Tests&Category!=PowerShellTests" }
+    Invoke-Execute { RunTests -Filter "FullyQualifiedName~TransformLoad.Tests&Category!=PowerShellTests" }
+    Invoke-Execute { RunTests -Filter "FullyQualifiedName~Web.Tests&Category!=PowerShellTests" }
 }
 
 function PowerShellTests {
