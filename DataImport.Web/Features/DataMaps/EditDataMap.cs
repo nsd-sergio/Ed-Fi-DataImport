@@ -58,10 +58,12 @@ namespace DataImport.Web.Features.DataMaps
                         DataSources = DataMapperFields.MapDataSourcesTypesToViewModel(),
                         SourceTables = DataMapperFields.MapLookupTablesToViewModel(_database),
                         SourceColumns = DataMapperFields.MapCsvHeadersToSourceColumns(columnHeaders),
-                        ResourceMetadata = resourceMetadata,
+                        ResourceMetadata = dataMap.IsDeleteByNaturalKey
+                            ? resourceMetadata.Where(r => r.Required).ToList()
+                            : resourceMetadata,
                         Mappings = dataMap.IsDeleteOperation
-                        ? new DeleteDataMapSerializer().Deserialize(dataMap.Map)
-                        : new DataMapSerializer(dataMap).Deserialize(dataMap.Map),
+                            ? new DeleteDataMapSerializer(dataMap).Deserialize(dataMap.Map)
+                            : new DataMapSerializer(dataMap).Deserialize(dataMap.Map),
                     },
 
                     MapName = dataMap.Name,
@@ -73,7 +75,8 @@ namespace DataImport.Web.Features.DataMaps
                     PreprocessorId = dataMap.FileProcessorScriptId,
                     Preprocessors = _preprocessorSelectListProvider.GetCustomFileProcessors(),
                     Attribute = dataMap.Attribute,
-                    IsDeleteOperation = dataMap.IsDeleteOperation
+                    IsDeleteOperation = dataMap.IsDeleteOperation,
+                    IsDeleteByNaturalKey = dataMap.IsDeleteByNaturalKey
                 };
             }
         }
@@ -88,6 +91,7 @@ namespace DataImport.Web.Features.DataMaps
             public int? PreprocessorId { get; set; }
             public string Attribute { get; set; }
             public bool IsDeleteOperation { get; set; }
+            public bool IsDeleteByNaturalKey { get; set; }
         }
 
         public class Validator : AbstractValidator<Command>
@@ -137,13 +141,16 @@ namespace DataImport.Web.Features.DataMaps
 
                 map.Name = request.MapName;
                 map.Map = request.IsDeleteOperation
-                ? new DeleteDataMapSerializer().Serialize(request.Mappings)
+                ? request.IsDeleteByNaturalKey
+                    ? new DataMapSerializer(map).Serialize(request.Mappings)
+                    : new DeleteDataMapSerializer(map).Serialize(request.Mappings)
                 : new DataMapSerializer(map).Serialize(request.Mappings);
                 map.ColumnHeaders = JsonConvert.SerializeObject(request.ColumnHeaders);
                 map.UpdateDate = DateTimeOffset.Now;
                 map.FileProcessorScriptId = request.PreprocessorId;
                 map.Attribute = request.Attribute;
                 map.IsDeleteOperation = request.IsDeleteOperation;
+                map.IsDeleteByNaturalKey = request.IsDeleteOperation && request.IsDeleteByNaturalKey;
                 _logger.Modified(map, m => m.Name);
 
                 return new ToastResponse
