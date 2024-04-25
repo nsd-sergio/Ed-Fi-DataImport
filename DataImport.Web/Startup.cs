@@ -34,6 +34,9 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using DataImport.Web.Middleware;
 using Microsoft.AspNetCore.Http.Features;
+#if DEBUG
+using System.Net.Http;
+#endif
 
 namespace DataImport.Web
 {
@@ -47,6 +50,9 @@ namespace DataImport.Web
         public Startup(IConfiguration configuration)
         {
             Configuration = configuration;
+#if DEBUG
+            ServicePointManager.ServerCertificateValidationCallback += (sender, cert, chain, sslPolicyErrors) => true;
+#endif
         }
 
         public IConfiguration Configuration
@@ -82,7 +88,14 @@ namespace DataImport.Web
             services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
             services.AddHttpContextAccessor();
 
+#if DEBUG
+            services.AddHttpClient(Helpers.Constants.LocalHttpClientName).ConfigurePrimaryHttpMessageHandler(_ => new HttpClientHandler
+            {
+                ServerCertificateCustomValidationCallback = (sender, cert, chain, sslPolicyErrors) => { return true; }
+            });
+#else
             services.AddHttpClient();
+#endif
 
             var databaseEngine = Configuration["AppSettings:DatabaseEngine"];
 
@@ -129,6 +142,7 @@ namespace DataImport.Web
             services.AddScoped<Services.Swagger.ISwaggerMetadataFetcher, Services.Swagger.SwaggerMetadataFetcher>();
             services.AddScoped<Services.Swagger.ISwaggerMetadataProcessor, Services.Swagger.SwaggerMetadataProcessorV1>();
             services.AddScoped<Services.Swagger.ISwaggerMetadataProcessor, Services.Swagger.SwaggerMetadataProcessorV2>();
+            services.AddScoped<Services.Swagger.ISwaggerMetadataProcessor, Services.Swagger.SwaggerMetadataProcessorV3>();
             services.AddTransient<Features.Agent.AgentSelectListProvider>();
             services.AddScoped<IEncryptionService, EncryptionService>();
             services.AddSingleton<IClock, Clock>();
