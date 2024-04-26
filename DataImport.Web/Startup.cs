@@ -67,7 +67,6 @@ namespace DataImport.Web
         // This method gets called by the runtime. Use this method to add services to the container.
         public void ConfigureServices(IServiceCollection services)
         {
-            // This is a test
             services.Configure<AppSettings>(Configuration.GetSection("AppSettings"));
             services.Configure<IdentitySettings>(Configuration.GetSection("IdentitySettings"));
             services.Configure<ConnectionStrings>(Configuration.GetSection("ConnectionStrings"));
